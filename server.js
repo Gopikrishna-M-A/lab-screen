@@ -7,7 +7,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000", // Origin 1
-      "https://screen-sharing-client.onrender.com", // Origin 2
+      "https://screen-share-stbf.onrender.com", // Origin 2
     ],
     methods: ["GET", "POST"],
   },
