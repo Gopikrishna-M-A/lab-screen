@@ -37,7 +37,7 @@ const Room = (props) => {
     // socketRef.current = io.connect("http://localhost:4000");
     socketRef.current = io.connect("https://lab-screen-server.onrender.com");
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
+      .getDisplayMedia({ video: true, audio: false })
       .then((stream) => {
         userVideo.current.srcObject = stream;
         socketRef.current.emit("join room", roomID, name);
