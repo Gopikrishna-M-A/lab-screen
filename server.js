@@ -57,6 +57,22 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("send message", ({ user, message }) => {
+    console.log("message received", user);
+    // const senderName = users[socketToRoom[socket.id].roomID].find(
+    //   (u) => u.id === user.peerID
+    // ).name;
+
+
+    io.to(user.peerID).emit("message", {
+      message
+    });
+    // socket.broadcast.to(socketToRoom[socket.id].roomID).emit("message", {
+    //   sender: senderName,
+    //   message: message,
+    // });
+  });
+
 
   socket.on('leave room', (payload) => {
     const roomID  = payload.roomID

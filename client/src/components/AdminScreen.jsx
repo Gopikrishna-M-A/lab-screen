@@ -4,14 +4,17 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "./ui/resizable";
-
+import { Input } from "./ui/input"
+import { Button } from "./ui/button"
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { usePeerContext } from "../PeerContextProvider"
 
 
-const AdminScreen = ({ roomID, toggle }) => {
+
+const AdminScreen = ({ roomID, toggle, sendMessage, removeFromRoom }) => {
     const { peersRef } = usePeerContext();
+    const [message,setMessage] = useState('')
     const [user, setUser] = useState(peersRef.current[0] || {});
     const ref = useRef();
     
@@ -34,6 +37,11 @@ const AdminScreen = ({ roomID, toggle }) => {
     const readablePeers = peersRef.current.filter((peer) => peer.peer.readable);
 
     useEffect(() => {}, [readablePeers]);
+
+
+
+
+
   return (
     <div className="h-screen p-20">
       <ResizablePanelGroup
@@ -41,7 +49,7 @@ const AdminScreen = ({ roomID, toggle }) => {
         className="w-full h-full rounded-lg border"
       >
         <ResizablePanel defaultSize={25}>
-          <div className="flex h-full items-center justify-center p-6">
+          <div className="flex flex-col h-full items-center justify-center p-6">
               <ScrollArea className="h-full w-full">
                 <div className="p-4">
                   <h4 className="mb-4 text-sm font-medium leading-none">
@@ -50,23 +58,34 @@ const AdminScreen = ({ roomID, toggle }) => {
                   {peersRef.current.map((peer,index) => (
                     peer.peer.readable &&
                     <div key={peer.peerID} >
-                       <div onClick={(e)=>{
+                      <div className="flex justify-between items-center">
+                       <div  onClick={(e)=>{
                         setUser(peer)
                         console.log("peer",peer);
-                        }}  className=" uppercase text-sm cursor-pointer p-y-2.5 px-5 rounded hover:font-bold transition-all">
+                        }}  className="uppercase text-sm cursor-pointer p-y-2.5 px-5 rounded hover:font-bold transition-all">
                         {peer.name}
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={()=>removeFromRoom(peer)}>remove</Button>
                       </div>
                       <Separator className="my-2" />
                     </div>
                   ))}
                 </div>
               </ScrollArea>
+              <div className="w-full flex gap-2">
+                  <Input value={message} onChange={(e)=>setMessage(e.target.value)}/>
+                  <Button onClick={()=>{
+                    sendMessage(user,message)
+                    setMessage("")
+                  }}>send</Button>
+              </div>
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={75}>
           <div className="flex flex-col h-full items-start gap-2 justify-center p-6">
-            <div className="text-3xl font-bold uppercase">{user.name}</div>
+            <div className="text-3xl font-bold uppercase flex justify-between">{user.name}
+            </div>
              <video playsInline autoPlay ref={ref} className="w-full aspect-video border rounded bg-slate-300" ></video> 
           </div>
         </ResizablePanel>

@@ -24,18 +24,18 @@ const Room = (props) => {
   const [peers, setPeers] = useState([]);
   const socketRef = useRef();
   const userVideo = useRef();
-  // const peersRef = useRef([]);
   const { roomID, name } = useParams();
   const [isVerified, setIsVerified] = useState(false);
   const [pin, setPin] = useState("");
   const [toggle, setToggle] = useState(false);
+  const [messages, setMessages] = useState([]); // State to hold messages
 
   const { peersRef } = usePeerContext();
 
 
   useEffect(() => {
     // socketRef.current = io.connect("http://localhost:4000");
-    socketRef.current = io.connect("https://lab-screen-server.onrender.com");
+    socketRef.current = io.connect("http://localhost:4000");
     navigator.mediaDevices
       .getDisplayMedia({ video: true, audio: false })
       .then((stream) => {
@@ -54,6 +54,9 @@ const Room = (props) => {
           });
           setPeers(peers);
         });
+
+
+
 
         socketRef.current.on("user joined", (payload) => {
           const peer = addPeer(payload.signal, payload.callerID, stream);
@@ -110,6 +113,29 @@ const Room = (props) => {
       
   }, []);
 
+  function formatTime(date) {
+    const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  }
+
+  useEffect(() => {
+    // Listen for incoming messages
+    socketRef.current.on("message", (data) => {
+      // Update messages state with the new message
+      setMessages(prevMessages => [
+        ...prevMessages,
+        {
+          message: data.message,
+          time: formatTime(new Date()) // Assuming 'formatTime' function formats the time as "2:00 pm"
+        }
+      ]);
+    });
+
+    return () => {
+      // Clean up the socket event listener when the component unmounts
+      socketRef.current.off("message");
+    };
+  }, []);
 
 
     
@@ -164,18 +190,27 @@ const Room = (props) => {
   };
 
   const leaveRoom = () => { 
-    console.log(socketRef.current);
+    console.log(socketRef.current.id);
     socketRef.current.emit("leave room",{ id:socketRef.current.id, roomID, name });
   }
 
+  const removeFromRoom = (user) => {
+    socketRef.current.emit("leave room",{ id:user.peerID, roomID, name:user.name });
+  }
+
+
+  const sendMessage = (user, message) => {
+    // Emit the message to the server
+    socketRef.current.emit("send message", { user, message });
+  };
 
   return (
     <div>
       <video playsInline autoPlay ref={userVideo} className="hidden" />
       { isVerified ? (
-        <AdminScreen roomID={roomID} toggle={toggle}/>
+        <AdminScreen roomID={roomID} toggle={toggle} sendMessage={sendMessage} removeFromRoom={removeFromRoom}/>
       ) : (
-        <div className="w-screen h-screen flex justify-center items-center">
+        <div className="w-screen h-screen flex flex-col justify-center items-center">
           <Result
             status="warning"
             title="You are being monitored"
@@ -208,6 +243,16 @@ const Room = (props) => {
               </Dialog>
             }
           />
+          <div className="border w-1/2 border-gray-300 rounded-md h-40 overflow-y-auto p-3">
+            {messages.map((message, index) => (
+              <div key={index} className="mb-3">
+                <div className="bg-gray-100 p-2 rounded-md shadow-sm flex justify-between">
+                  <p className="text-sm">{message.message}</p>
+                  <p className="text-xs text-gray-400">{message.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
