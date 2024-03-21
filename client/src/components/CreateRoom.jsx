@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { v1 as uuid } from "uuid";
 import { useNavigate } from "react-router-dom";
-import { Input, Button, Form } from "antd";
+import { Input, Form } from "antd";
+import { Button } from "../components/ui/button";
 
 const CreateRoom = () => {
   const navigate = useNavigate();
@@ -18,8 +19,21 @@ const CreateRoom = () => {
     }
   };
 
+  useEffect(() => {
+    const systemInfo = {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      appName: navigator.appName,
+      appVersion: navigator.appVersion,
+      userAgent: navigator.userAgent,
+    };
+    console.log('System Information:', navigator);
+  }, []);
+
+
   return (
-    <Form className="form" name="createRoomForm" onFinish={onFinish} layout="vertical">
+    <div className="w-full h-screen flex justify-center items-center flex-col">
+      <Form className="form border p-5 shadow-sm rounded-lg"  name="createRoomForm" onFinish={onFinish} layout="vertical">
       <Form.Item
         label="Name"
         name="name"
@@ -40,11 +54,13 @@ const CreateRoom = () => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmltype="submit">
           {room ? "Join room" : "Create room"}
         </Button>
       </Form.Item>
     </Form>
+    </div>
+    
   );
 };
 

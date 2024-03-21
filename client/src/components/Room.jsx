@@ -35,7 +35,7 @@ const Room = (props) => {
 
   useEffect(() => {
     // socketRef.current = io.connect("http://localhost:4000");
-    socketRef.current = io.connect("http://localhost:4000");
+    socketRef.current = io.connect("https://lab-screen-server.onrender.com");
     navigator.mediaDevices
       .getDisplayMedia({ video: true, audio: false })
       .then((stream) => {
