@@ -60,10 +60,6 @@ io.on("connection", (socket) => {
 
   socket.on("send message", ({ user, message }) => {
     console.log("message received", user);
-    // const senderName = users[socketToRoom[socket.id].roomID].find(
-    //   (u) => u.id === user.peerID
-    // ).name;
-
 
     io.to(user.peerID).emit("message", {
       message
@@ -72,6 +68,11 @@ io.on("connection", (socket) => {
     //   sender: senderName,
     //   message: message,
     // });
+  });
+  socket.on("send broadcast message", ({ message }) => {
+    io.emit("message", {
+      message,
+    });
   });
 
 
@@ -89,7 +90,7 @@ io.on("connection", (socket) => {
     }
 
     // Notify other users in the room about the disconnection
-    users[roomID].forEach(user => {
+    users[roomID]?.forEach(user => {
       io.to(user.id).emit('user left', {id: userID, name: userName})
     })
   });

@@ -12,7 +12,7 @@ import { usePeerContext } from "../PeerContextProvider"
 
 
 
-const AdminScreen = ({ roomID, toggle, sendMessage, removeFromRoom }) => {
+const AdminScreen = ({ roomID, toggle, sendMessage, sendBroadcastMessage, removeFromRoom, endRoom }) => {
     const { peersRef } = usePeerContext();
     const [message,setMessage] = useState('')
     const [user, setUser] = useState(peersRef.current[0] || {});
@@ -52,8 +52,9 @@ const AdminScreen = ({ roomID, toggle, sendMessage, removeFromRoom }) => {
           <div className="flex flex-col h-full items-center justify-center p-6">
               <ScrollArea className="h-full w-full">
                 <div className="p-4">
-                  <h4 className="mb-4 text-sm font-medium leading-none">
+                  <h4 className="mb-4 text-sm font-medium leading-none flex justify-between items-center">
                     Room : {roomID} ({readablePeers.length})
+                    <Button onClick={endRoom} size='sm' className="gap-2" >End Room</Button>
                   </h4>
                   {peersRef.current.map((peer,index) => (
                     peer.peer.readable &&
@@ -72,12 +73,20 @@ const AdminScreen = ({ roomID, toggle, sendMessage, removeFromRoom }) => {
                   ))}
                 </div>
               </ScrollArea>
-              <div className="w-full flex gap-2">
+              <div className="w-full flex flex-col gap-2">
                   <Input value={message} onChange={(e)=>setMessage(e.target.value)}/>
-                  <Button onClick={()=>{
+                  <div className="flex gap-2 w-full">
+                  <Button className='w-full' variant='outline' onClick={()=>{
+                    sendBroadcastMessage(message)
+                    setMessage("")
+                  }}>broadcast
+                  </Button>
+
+                  <Button className='w-full' onClick={()=>{
                     sendMessage(user,message)
                     setMessage("")
                   }}>send</Button>
+                  </div>
               </div>
           </div>
         </ResizablePanel>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
+import { redirect } from 'react-router-dom';
 // import Peer from "simple-peer";
 import * as Peer from 'simple-peer'
 import { useParams } from "react-router-dom";
@@ -34,8 +35,8 @@ const Room = (props) => {
 
 
   useEffect(() => {
-    // socketRef.current = io.connect("http://localhost:4000");
-    socketRef.current = io.connect("https://lab-screen-server.onrender.com");
+    socketRef.current = io.connect("http://localhost:4000");
+    // socketRef.current = io.connect("https://lab-screen-server.onrender.com");
     navigator.mediaDevices
       .getDisplayMedia({ video: true, audio: false })
       .then((stream) => {
@@ -138,9 +139,6 @@ const Room = (props) => {
   }, []);
 
 
-    
-
-
   function createPeer(userToSignal, callerID, stream) {
     const peer = new Peer({
       initiator: true,
@@ -190,9 +188,19 @@ const Room = (props) => {
   };
 
   const leaveRoom = () => { 
-    console.log(socketRef.current.id);
     socketRef.current.emit("leave room",{ id:socketRef.current.id, roomID, name });
+    window.location.href = '/'
   }
+
+  const endRoom = () => {
+    socketRef.current.emit("leave room",{ id:socketRef.current.id, roomID, name });
+    peersRef.current.map((peer,index)=>{
+      socketRef.current.emit("leave room",{ id:peer.peerID, roomID, name:peer.name });
+    })
+    window.location.href = '/'
+  }
+
+  
 
   const removeFromRoom = (user) => {
     socketRef.current.emit("leave room",{ id:user.peerID, roomID, name:user.name });
@@ -204,11 +212,15 @@ const Room = (props) => {
     socketRef.current.emit("send message", { user, message });
   };
 
+  const sendBroadcastMessage = (message) => {
+    socketRef.current.emit("send broadcast message", { message });
+  };
+
   return (
     <div>
       <video playsInline autoPlay ref={userVideo} className="hidden" />
       { isVerified ? (
-        <AdminScreen roomID={roomID} toggle={toggle} sendMessage={sendMessage} removeFromRoom={removeFromRoom}/>
+        <AdminScreen endRoom={endRoom} roomID={roomID} toggle={toggle} sendMessage={sendMessage} sendBroadcastMessage={sendBroadcastMessage} removeFromRoom={removeFromRoom}/>
       ) : (
         <div className="w-screen h-screen flex flex-col justify-center items-center">
           <Result
